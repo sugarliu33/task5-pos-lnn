@@ -1,6 +1,8 @@
 'use strict';
-
+var fixtures = require('../test/fixtures.js');
 //TODO: 请在该文件中实现练习要求并删除此注释
+var allItemInfo = fixtures.loadAllItems();
+var promotionInfo = fixtures.loadPromotions();
 var tags = [
   'ITEM000001',
   'ITEM000001',
@@ -11,65 +13,14 @@ var tags = [
   'ITEM000005',
   'ITEM000005-2',
 ];
-function loadAllItems() {
-  return [
-    {
-      barcode: 'ITEM000000',
-      name: '可口可乐',
-      unit: '瓶',
-      price: 3.00
-    },
-    {
-      barcode: 'ITEM000001',
-      name: '雪碧',
-      unit: '瓶',
-      price: 3.00
-    },
-    {
-      barcode: 'ITEM000002',
-      name: '苹果',
-      unit: '斤',
-      price: 5.50
-    },
-    {
-      barcode: 'ITEM000003',
-      name: '荔枝',
-      unit: '斤',
-      price: 15.00
-    },
-    {
-      barcode: 'ITEM000004',
-      name: '电池',
-      unit: '个',
-      price: 2.00
-    },
-    {
-      barcode: 'ITEM000005',
-      name: '方便面',
-      unit: '袋',
-      price: 4.50
-    }
-  ];
+
+function printReceipt() {
+  var buyItemInfo = buildItemInfo(tags,allItemInfo);
+  var ItemPromotions = calculateItemPromotion(buyItemInfo,promotionInfo);
+  console.log(ItemPromotions);
 }
-function loadPromotions() {
-  return [
-    {
-      type: 'BUY_TWO_GET_ONE_FREE',
-      barcodes: [
-        'ITEM000000',
-        'ITEM000001',
-        'ITEM000005'
-      ]
-    }
-  ];
-}
-
-
-var allItemInfo = loadAllItems();
-var promotionInfo = loadPromotions();
-
 //获取商品购买信息
-function buildItemInfo(tags, allIteminfo) {
+function buildItemInfo(tags, allItemInfo) {
   let tempTags = new Set([...tags].map(x => x.substring(0,10)));
   var buyItemInfo = [];
   for (var value of Array.from(tempTags)){
@@ -89,7 +40,7 @@ function buildItemInfo(tags, allIteminfo) {
       }
     }
   }
-  for (var value of allIteminfo){
+  for (var value of allItemInfo){
     for (var item of buyItemInfo){
       if(item.barcode == value.barcode){
         item.name = value.name;
@@ -105,9 +56,27 @@ var buyItemInfo = buildItemInfo(tags,allItemInfo);
 //计算可优惠商品的优惠价格
 function calculateItemPromotion(buyItemInfo, promotionInfo) {
   var promotionItem = promotionInfo[0].barcodes;
-  for (var item of buyItemInfo){
-
+  var ItemPromotions = [];
+  var tempPrice = 0;
+  for (let item of buyItemInfo) {
+    ItemPromotions.push({barcode:item.barcode,promotionPrice:0});
   }
+  for (var item of buyItemInfo){
+    if (promotionInfo[0].type == 'BUY_TWO_GET_ONE_FREE'){
+      for (var id of promotionItem) {
+        if (item.barcode == id && item.quantity >=2){
+          tempPrice = item.price;
+        }
+        for (let ip of ItemPromotions) {
+          if (ip.barcode == id){
+            ip.promotionPrice = tempPrice;
+          }
+        }
+      }
+
+    }
+  }
+  return ItemPromotions;
 }
 
-calculateItemPromotion(buyItemInfo,promotionInfo);
+printReceipt();
