@@ -13,15 +13,16 @@ var tags = [
   'ITEM000005',
   'ITEM000005-2',
 ];
-
+//#1
 function printReceipt() {
   var buyItemInfo = buildItemInfo(tags,allItemInfo);
-  var ItemPromotions = calculateItemPromotion(buyItemInfo,promotionInfo);
-  var ItemSummary = calculateItemPrice(buyItemInfo);
-  var TotalSummary = calculateTotalPrice(ItemSummary,ItemPromotions);
-  console.log(TotalSummary);
+  var itemPromotions = calculateItemPromotion(buyItemInfo,promotionInfo);
+  var itemSummary = calculateItemPrice(buyItemInfo);
+  var totalSummary = calculateTotalPrice(itemSummary,itemPromotions);
+  //console.log(totalSummary);
+  buildPrint(itemSummary,itemPromotions);
 }
-//获取商品购买信息
+//#2:获取商品购买信息
 function buildItemInfo(tags, allItemInfo) {
   let tempTags = new Set([...tags].map(x => x.substring(0,10)));
   var buyItemInfo = [];
@@ -53,13 +54,14 @@ function buildItemInfo(tags, allItemInfo) {
   }
   return buyItemInfo;
 }
-//计算可优惠商品的优惠价格
+//#3: 计算可优惠商品的优惠价格
 function calculateItemPromotion(buyItemInfo, promotionInfo) {
   var promotionItem = promotionInfo[0].barcodes;
-  var ItemPromotions = [];
+  var itemPromotions = [];
   var tempPrice = 0;
+  var totalSave = 0;
   for (let item of buyItemInfo) {
-    ItemPromotions.push({barcode:item.barcode,promotionPrice:0});
+    itemPromotions.push({barcode:item.barcode,promotionPrice:0});
   }
   for (var item of buyItemInfo){
     if (promotionInfo[0].type == 'BUY_TWO_GET_ONE_FREE'){
@@ -67,33 +69,53 @@ function calculateItemPromotion(buyItemInfo, promotionInfo) {
         if (item.barcode == id && item.quantity >=2){
           tempPrice = item.price;
         }
-        for (let ip of ItemPromotions) {
+        for (let ip of itemPromotions) {
           if (ip.barcode == id){
             ip.promotionPrice = tempPrice;
           }
         }
       }
-
     }
   }
-  return ItemPromotions;
+  for (let ip of itemPromotions) {
+    totalSave += ip.promotionPrice;
+  }
+  itemPromotions.totalSave = totalSave;
+  return itemPromotions;
 }
-//计算购买商品的总价格
+//#4: 计算购买商品的总价格
 function calculateItemPrice(buyItemInfo) {
   for (let item of buyItemInfo) {
       item.summary = Number.parseFloat(item.price * item.quantity);
   }
   return buyItemInfo;
 }
-//计算商品优惠后的总价格
-function calculateTotalPrice(ItemSummary,ItemPromotions) {
-  for (let is of ItemSummary) {
-    for (let ip of ItemPromotions) {
+//#5:计算商品优惠后的总价格
+function calculateTotalPrice(itemSummary,itemPromotions) {
+  var total = 0;
+  var totalSave = 0;
+  for (let is of itemSummary) {
+    for (let ip of itemPromotions) {
       if (is.barcode == ip.barcode){
         is.summary = is.summary - ip.promotionPrice;
       }
     }
+    total += is.summary;
   }
-  return ItemSummary;
+  itemSummary.total = total;
+  return itemSummary;
+}
+//#6: 创建打印票据单
+function buildPrint(itemSummary,itemPromotions) {
+  var printInfo = "***<没钱赚商店>收据***"+'\n';
+  for (let is of itemSummary) {
+    printInfo += "名称：" +is.name+", 数量："+is.quantity+is.unit+", 单价："+is.price.toFixed(2)
+      +"(元), 小计："+is.summary.toFixed(2)+"(元)"+"\n";
+  }
+  printInfo += '----------------------'+'\n';
+  printInfo += "总计："+itemSummary.total.toFixed(2)+"(元)"+'\n';
+  printInfo += "节省："+itemPromotions.totalSave.toFixed(2)+"(元)"+'\n';
+  printInfo += '**********************';
+  console.log(printInfo);
 }
 printReceipt();
