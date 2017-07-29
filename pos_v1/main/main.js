@@ -17,7 +17,8 @@ var tags = [
 function printReceipt() {
   var buyItemInfo = buildItemInfo(tags,allItemInfo);
   var ItemPromotions = calculateItemPromotion(buyItemInfo,promotionInfo);
-  console.log(ItemPromotions);
+  var ItemSummary = calculateItemPrice(buyItemInfo);
+  console.log(ItemSummary);
 }
 //获取商品购买信息
 function buildItemInfo(tags, allItemInfo) {
@@ -51,8 +52,6 @@ function buildItemInfo(tags, allItemInfo) {
   }
   return buyItemInfo;
 }
-
-var buyItemInfo = buildItemInfo(tags,allItemInfo);
 //计算可优惠商品的优惠价格
 function calculateItemPromotion(buyItemInfo, promotionInfo) {
   var promotionItem = promotionInfo[0].barcodes;
@@ -78,5 +77,11 @@ function calculateItemPromotion(buyItemInfo, promotionInfo) {
   }
   return ItemPromotions;
 }
-
+//计算购买商品的总价格
+function calculateItemPrice(buyItemInfo) {
+  for (let item of buyItemInfo) {
+      item.summary = Number.parseFloat(item.price * item.quantity);
+  }
+  return buyItemInfo;
+}
 printReceipt();
