@@ -3,24 +3,15 @@ var fixtures = require('../test/fixtures.js');
 //TODO: 请在该文件中实现练习要求并删除此注释
 var allItemInfo = fixtures.loadAllItems();
 var promotionInfo = fixtures.loadPromotions();
-var tags = [
-  'ITEM000001',
-  'ITEM000001',
-  'ITEM000001',
-  'ITEM000001',
-  'ITEM000001',
-  'ITEM000003-2.5',
-  'ITEM000005',
-  'ITEM000005-2',
-];
 //#1
-function printReceipt() {
+function printReceipt(tags) {
   var buyItemInfo = buildItemInfo(tags,allItemInfo);
   var itemPromotions = calculateItemPromotion(buyItemInfo,promotionInfo);
   var itemSummary = calculateItemPrice(buyItemInfo);
   var totalSummary = calculateTotalPrice(itemSummary,itemPromotions);
-  //console.log(totalSummary);
-  buildPrint(itemSummary,itemPromotions);
+  var printInfo = buildPrint(totalSummary,itemPromotions);
+  console.log(printInfo);
+
 }
 //#2:获取商品购买信息
 function buildItemInfo(tags, allItemInfo) {
@@ -109,13 +100,14 @@ function calculateTotalPrice(itemSummary,itemPromotions) {
 function buildPrint(itemSummary,itemPromotions) {
   var printInfo = "***<没钱赚商店>收据***"+'\n';
   for (let is of itemSummary) {
-    printInfo += "名称：" +is.name+", 数量："+is.quantity+is.unit+", 单价："+is.price.toFixed(2)
-      +"(元), 小计："+is.summary.toFixed(2)+"(元)"+"\n";
+    printInfo += "名称：" +is.name+"，数量："+is.quantity+is.unit+"，单价："+is.price.toFixed(2)
+      +"(元)，小计："+is.summary.toFixed(2)+"(元)"+"\n";
   }
   printInfo += '----------------------'+'\n';
   printInfo += "总计："+itemSummary.total.toFixed(2)+"(元)"+'\n';
   printInfo += "节省："+itemPromotions.totalSave.toFixed(2)+"(元)"+'\n';
   printInfo += '**********************';
-  console.log(printInfo);
+  return printInfo;
 }
-printReceipt();
+
+module.exports = printReceipt;
